@@ -1,0 +1,12 @@
+name: dijkstra-conda
+channels:
+  - default
+  - conda-forge
+dependencies:
+  - bidict
+  - pandas
+  - geopandas
+  - matplotlib
+  - multidict
+  - networkx
+  - shapely>=1.8.0
