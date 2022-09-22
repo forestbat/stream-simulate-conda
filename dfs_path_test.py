@@ -16,7 +16,7 @@ from shapefile import Reader, Shape
 
 """
 本文件线元测试数据来自https://www.hydrosheds.org/products/hydrorivers，坐标为EPSG:4326，单位全部为度，1°≈110km
-河网图层只接受LineString，不接受MultiLineString，输入前请将其转化为单部件
+河网矢量图层应在使用前在GIS软件中转换为单部件，否则可能出现问题
 """
 
 
@@ -46,16 +46,16 @@ def line_min_dist(pyshp_coord, net_reader: Reader, initial_buffer=0.005):
 
     参数
     ----------
-    point : shapely.POINT
+    point : tuple
         待寻找最近线段的点
-    gpd_dataframe : geopandas.GeoDataFrame
-        存储河网线段的GeoDataFrame数据结构
+    net_reader : shapefile.Reader
+        存储河网线段的Reader数据结构
     initial_buffer : float
         给点加的buffer（搜寻半径）大小，初始为0.005度，约为550米
 
     返回
     ----------
-    GeoDataFrame中的一个Series（对应图层属性表中一行+geometry项），实际运行中通常取其geometry项
+    离point最近的一条Shapely LineString
     """
     shapely_point = Point(pyshp_coord)
     buffer_steps = 0.002
@@ -102,8 +102,8 @@ def tie_outside_node(node_reader: Reader, network_reader: Reader, outdated: bool
 
     参数
     ----------
-    gpd_df_nodes: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_df_network: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
 
     返回
     ----------
@@ -189,8 +189,8 @@ def build_graph(node_reader: Reader, network_reader: Reader, outdated: bool, cac
     """
     参数
     ----------
-    node_reader: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    edges_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
 
     返回
     ----------
@@ -230,8 +230,8 @@ def get_upstream_stations(node_reader: Reader, network_reader: Reader,
     """
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     station_index: 站点图层中的标号，本例中从0开始，针对不同数据，可以从图层属性表中行号辅助判断
     cutoff: 同一条河上最多可以上溯几个水文站，默认为int.max（当然也可以指定一个很大的数），即不限数量
 
@@ -295,8 +295,8 @@ def get_downstream_stations(node_reader: Reader, network_reader: Reader,
     """
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     station_index: 站点图层中的标号，本例中从0开始，针对不同数据，可以从图层属性表中行号辅助判断
     cutoff: 同一条河上最多可以往下寻找几个水文站，默认为int.max（当然也可以指定一个很大的数），即不限数量
 
@@ -335,8 +335,8 @@ def get_upstream_stations_graph(node_reader: Reader, network_reader: Reader, num
     """
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     number: 站点图层中的标号，本例中从0开始，针对不同数据，可以从图层属性表中行号辅助判断
     cutoff: 同一条河上最多可以上溯几个水文站，默认为int.max（当然也可以指定一个很大的数），即不限数量
 
@@ -380,8 +380,8 @@ def write_path_file(node_reader: Reader, network_reader: Reader, output_path=os.
 
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     """
     with open(os.path.join(output_path, "up_down_paths.txt"), mode='w+') as fp:
         for i in range(0, len(node_reader)):
@@ -401,8 +401,8 @@ def show_upstream_stations_graph(node_reader: Reader, network_reader: Reader, nu
 
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     number: 站点图层中的标号，本例中从0开始，针对不同数据，可以从图层属性表中行号辅助判断
     cutoff: 同一条河上最多可以上溯几个水文站，默认为int.max（当然也可以指定一个很大的数），即不限数量
     """
@@ -422,8 +422,8 @@ def show_downstream_stations(node_reader: Reader, network_reader: Reader, number
 
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     number: 站点图层中的标号，本例中从0开始，针对不同数据，可以从图层属性表中行号辅助判断
     cutoff: 同一条河上最多可以往下寻找几个水文站，默认为int.max（当然也可以指定一个很大的数），即不限数量
     """
@@ -439,8 +439,8 @@ def upstream_node_on_mainstream(node_reader: Reader, network_reader: Reader, num
 
     参数
     ----------
-    gpd_nodes_df: 存储站点数据的GeoDataFrame，参考本文件开头gpd_nodes_dataframe
-    gpd_network_df: 存储河网（所有LineString）数据的GeoDataFrame，参考本文件开头gpd_network_dataframe
+    node_reader: 存储站点数据的Reader
+    network_reader: 存储河网（所有LineString）数据的Reader
     number_src: 用以确定上游流域的站点号，可以从图层属性表中辅助判断
     number_target: 待判断的站点号
     """
@@ -496,7 +496,6 @@ if __name__ == '__main__':
     INPUT_NODE_FILE_SHP = os.path.relpath("test_data/near_changchun_dots.shp")
     node_read = Reader(INPUT_NODE_FILE_SHP)
     network_read = Reader(INPUT_NETWORK_FILE_SHP)
-    '''用以标记数据是否过期，默认为False，改为True并删除所有缓存文件后，将从头生成所有数据'''
     outdate = True
     index = 0
     START_TIME = time.time()
