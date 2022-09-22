@@ -21,7 +21,7 @@ def main(outdated, nodes_path, river_path, cur_sta, up_sta, cutoff, upstream, do
     gpd_nodes_dataframe = gpd.read_file(input_node_file_shp)
     gpd_network_dataframe = gpd.read_file(input_network_file_shp)
     if upstream is True:
-        show_upstream_stations_graph(gpd_nodes_dataframe, gpd_network_dataframe, cur_sta, outdated, cutoff, cache_dir, output_dir)
+        show_upstream_stations_graph(gpd_network_dataframe, 1, cur_sta, outdated, cutoff, cache_dir, output_dir)
     elif downstream is True:
         show_downstream_stations(gpd_nodes_dataframe, gpd_network_dataframe, cur_sta, outdated, cutoff, cache_dir, output_dir)
     if up_sta is not None:
